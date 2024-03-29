@@ -1,13 +1,14 @@
 import pandas as pd   #to create data frames
 import tldextract     #to extract domains, subdomains and tlds
 from urllib.parse import  urlparse  #to get the path
+from tabulate import tabulate
 
 from Cluster import Cluster
 from UrlComponents import UrlComponents   
     
 ####The main function
 def main():
-    df = pd.read_csv('PhishingCampaignClustering/bda_urls_hashtags.csv',sep = ',', quotechar='"', skipinitialspace=True)
+    df = pd.read_csv('PhishingCampaignClustering/bda_urls_hashtags_2.csv',sep = ',', quotechar='"', skipinitialspace=True)
     urls = df.get("url")
     domains = []; tlds = []; subDomains = []; paths = []
 
@@ -27,21 +28,28 @@ def main():
     df = df[df.isPhishing != 0]
     theclusters = Cluster()
     processData(df, theclusters)
-    printClustersToAFile(theclusters)
-    '''df = pd.DataFrame([(k, o.sid, o.rd, o.url, o.tld)
+    #printClustersToAFile(theclusters)
+    df = pd.DataFrame([(k, o.sid, o.rd, o.url, o.tld)
               for k, l in theclusters.clusters.items() for o in l],
              columns=['key', 'sid', 'rd', 'url', 'tld']
-            )'''
-    #analyseDiffTlds(df)
-    ##todo - after tld part is done - get started with getting the whois _ add the registrant to df 
+            )
+    analyseDiffTlds(df)
+    addWhoIsToDf(df)
+    ##todo - after whois part is done - analyse the data- get numbers and make a report 
 ####End Function
+    
+ ##todo _ get started with getting the whois _ add the registrant to df 
+def addWhoIsToDf(df):
+    print("todo")
 
-##todo - add the value of unique tld to original df and find a way to print df in file properly
+# add the value of unique tld to original df 
 def  analyseDiffTlds(df):
+    df['unq_tld_camp'] = df.groupby(["key"])["tld"].transform(lambda x: [x.nunique()]*len(x))
+
     with open('roughtemp10&.txt', 'w') as f:
         with pd.option_context('display.max_rows', None, 'display.max_columns', None): 
-            print(df, file=f)
-            print(df.astype(str).groupby('key')['tld'].agg(lambda x: ','.join(x.unique())), file=f)
+            print(tabulate(df[["key", "unq_tld_camp", "tld", "url"]], tablefmt="pipe", headers="keys"), file=f)
+            
             
 
 def printClustersToAFile(theclusters):
