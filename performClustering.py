@@ -46,7 +46,7 @@ def addWhoIsToDf(df):
 def  analyseDiffTlds(df):
     df['unq_tld_camp'] = df.groupby(["key"])["tld"].transform(lambda x: [x.nunique()]*len(x))
 
-    with open('roughtemp10&.txt', 'w') as f:
+    with open('PhishingCampaignClustering/roughtemp10&.txt', 'w') as f:
         with pd.option_context('display.max_rows', None, 'display.max_columns', None): 
             print(tabulate(df[["key", "unq_tld_camp", "tld", "url"]], tablefmt="pipe", headers="keys"), file=f)
             
