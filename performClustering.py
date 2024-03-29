@@ -2,7 +2,7 @@ import pandas as pd   #to create data frames
 import tldextract     #to extract domains, subdomains and tlds
 from urllib.parse import  urlparse  #to get the path
 from tabulate import tabulate
-
+import requests,json
 from Cluster import Cluster
 from UrlComponents import UrlComponents   
     
@@ -38,18 +38,34 @@ def main():
     ##todo - after whois part is done - analyse the data- get numbers and make a report 
 ####End Function
     
+
  ##todo _ get started with getting the whois _ add the registrant to df 
 def addWhoIsToDf(df):
-    print("todo")
+    for index, row in df.iterrows():
+        fetch_search_data(row['rd'])
+####End Function
+
+
+# getting the WHO is gata
+def fetch_search_data(rd):   
+    username = "usrarshdeep"
+    token = ''
+    api_url = "https://vmi935593.contaboserver.net/api/v1/get_whois_data.php"
+    params = {"token":token,"username":username, "rd":rd}
+    r = requests.post(api_url,params=params,timeout = 100)
+    if r.status_code == 200:
+        result = json.loads(r.text)['attr']
+        print(result)
+####End Function      
+
 
 # add the value of unique tld to original df 
 def  analyseDiffTlds(df):
     df['unq_tld_camp'] = df.groupby(["key"])["tld"].transform(lambda x: [x.nunique()]*len(x))
-
     with open('PhishingCampaignClustering/roughtemp10&.txt', 'w') as f:
         with pd.option_context('display.max_rows', None, 'display.max_columns', None): 
             print(tabulate(df[["key", "unq_tld_camp", "tld", "url"]], tablefmt="pipe", headers="keys"), file=f)
-            
+####End Function
             
 
 def printClustersToAFile(theclusters):
