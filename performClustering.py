@@ -35,14 +35,19 @@ def main():
             )
     analyseDiffTlds(df)
     addWhoIsToDf(df)
+    with open('PhishingCampaignClustering/roughiana.txt', 'w') as f:
+        with pd.option_context('display.max_rows', None, 'display.max_columns', None): 
+            print(tabulate(df[["key", "unq_tld_camp", "tld", "iana" ,"url"]], tablefmt="pipe", headers="keys"), file=f)
     ##todo - after whois part is done - analyse the data- get numbers and make a report 
 ####End Function
     
 
  ##todo _ get started with getting the whois _ add the registrant to df 
 def addWhoIsToDf(df):
+    iana = [];
     for index, row in df.iterrows():
-        fetch_search_data(row['rd'])
+        iana.append(fetch_search_data(row['rd']))
+    df.insert(6, "iana" , iana, True)
 ####End Function
 
 
@@ -55,7 +60,11 @@ def fetch_search_data(rd):
     r = requests.post(api_url,params=params,timeout = 100)
     if r.status_code == 200:
         result = json.loads(r.text)['attr']
-        print(result)
+        try:
+            return result[0]['iana']
+        except:
+            return 0
+    else: return 0
 ####End Function      
 
 
